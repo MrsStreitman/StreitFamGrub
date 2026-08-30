@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Weekly Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2B3A42;
+    --ink-2:#1F2A30;
+    --parchment:#F6EFDE;
+    --parchment-2:#EFE4C9;
+    --mustard:#D6A419;
+    --mustard-deep:#B6870E;
+    --sage:#7A8B5C;
+    --sage-deep:#5F6E45;
+    --clay:#B5533C;
+    --clay-deep:#943F2C;
+    --charcoal:#33302A;
+    --line: rgba(246,239,222,0.14);
+    --line-dark: rgba(43,58,66,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(255,255,255,0.035), transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(255,255,255,0.03), transparent 40%);
+    color:var(--parchment);
+    font-family:'Karla', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:900px;
+    margin:0 auto;
+    padding:28px 18px 60px;
+  }
+  header{
+    text-align:center;
+    margin-bottom:22px;
+  }
+  .kicker{
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--mustard);
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(32px,6vw,46px);
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    font-size:14.5px;
+    color:rgba(246,239,222,0.65);
+    max-width:440px;
+    margin:0 auto;
+    line-height:1.5;
+  }
+
+  /* legend */
+  .legend{
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    margin-top:18px;
+    flex-wrap:wrap;
+  }
+  .legend-item{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12.5px;
+    color:rgba(246,239,222,0.75);
+  }
+  .swatch{width:11px;height:11px;border-radius:50%;display:inline-block;}
+  .swatch.green{background:radial-gradient(circle at 30% 30%, #9DB37C, var(--sage));}
+  .swatch.yellow{background:radial-gradient(circle at 30% 30%, #F0C64E, var(--mustard-deep));}
+  .swatch.red{background:radial-gradient(circle at 30% 30%, #D57A63, var(--clay-deep));}
+
+  /* week nav */
+  .weeknav{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    margin:28px 0 18px;
+  }
+  .weeknav button{
+    background:rgba(246,239,222,0.08);
+    border:1px solid var(--line);
+    color:var(--parchment);
+    width:34px;height:34px;
+    border-radius:50%;
+    font-size:16px;
+    cursor:pointer;
+    transition:background 0.15s;
+  }
+  .weeknav button:hover{background:rgba(246,239,222,0.16);}
+  .weekrange{
+    font-family:'Fraunces', serif;
+    font-size:16px;
+    min-width:190px;
+    text-align:center;
+  }
+  .refresh-row{
+    text-align:center;
+    margin-bottom:22px;
+  }
+  .refresh-row button{
+    background:none;
+    border:none;
+    color:rgba(246,239,222,0.55);
+    font-size:12px;
+    text-decoration:underline;
+    cursor:pointer;
+    font-family:'Karla',sans-serif;
+  }
+
+  /* day cards */
+  .days{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(240px,1fr));
+    gap:16px;
+  }
+  .day-card{
+    position:relative;
+    background:var(--parchment);
+    border-radius:10px;
+    padding:20px 18px 18px 30px;
+    color:var(--charcoal);
+    cursor:pointer;
+    box-shadow:0 6px 16px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.4) inset;
+    transition:transform 0.12s ease, box-shadow 0.12s ease;
+    min-height:104px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .day-card:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,0.28);}
+  .day-card::before, .day-card::after{
+    content:"";
+    position:absolute;
+    left:12px;
+    width:9px;height:9px;
+    border-radius:50%;
+    background:var(--ink);
+    box-shadow:inset 0 1px 2px rgba(0,0,0,0.4);
+  }
+  .day-card::before{top:16px;}
+  .day-card::after{bottom:16px;}
+  .day-card.today{outline:2px solid var(--mustard); outline-offset:2px;}
+  .day-label{
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:rgba(51,48,42,0.55);
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .day-name{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  .meal-row{
+    display:flex;
+    align-items:center;
+    gap:9px;
+  }
+  .meal-name{
+    font-size:15px;
+    font-weight:600;
+    line-height:1.3;
+  }
+  .empty-slot{
+    font-size:14px;
+    color:rgba(51,48,42,0.4);
+    font-style:italic;
+  }
+  .note-row{
+    margin-top:9px;
+    padding-top:8px;
+    border-top:1px dashed rgba(51,48,42,0.18);
+  }
+  .note-text{
+    font-size:12.5px;
+    color:rgba(51,48,42,0.68);
+    font-style:italic;
+    cursor:pointer;
+    line-height:1.4;
+    word-break:break-word;
+  }
+  .note-text .pin{font-style:normal;margin-right:4px;}
+  .note-add-link{
+    font-size:11.5px;
+    color:var(--mustard-deep);
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.01em;
+  }
+  .note-input{
+    width:100%;
+    font-family:'Karla',sans-serif;
+    font-size:12.5px;
+    padding:7px 9px;
+    border-radius:6px;
+    border:1px solid var(--mustard);
+    color:var(--charcoal);
+    background:#fff;
+  }
+  .dot{
+    width:15px;height:15px;
+    border-radius:50%;
+    flex-shrink:0;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(255,255,255,0.3);
+  }
+  .dot.green{background:radial-gradient(circle at 30% 30%, #A9C285, var(--sage));}
+  .dot.yellow{background:radial-gradient(circle at 30% 30%, #F3CE5E, var(--mustard-deep));}
+  .dot.red{background:radial-gradient(circle at 30% 30%, #DB8870, var(--clay-deep));}
+
+  /* modal */
+  .overlay{
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    background:rgba(15,20,23,0.72);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:50;
+    padding:0;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--parchment);
+    color:var(--charcoal);
+    width:100%;
+    max-width:560px;
+    max-height:88vh;
+    border-radius:18px 18px 0 0;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    box-shadow:0 -8px 30px rgba(0,0,0,0.4);
+  }
+  @media (min-width:640px){
+    .overlay{align-items:center;padding:20px;}
+    .modal{border-radius:16px;max-height:80vh;}
+  }
+  .modal-head{
+    padding:18px 20px 12px;
+    border-bottom:1px solid var(--line-dark);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-shrink:0;
+  }
+  .modal-head h2{
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    margin:0;
+    font-weight:600;
+  }
+  .modal-head .close{
+    background:none;border:none;font-size:22px;cursor:pointer;color:var(--charcoal);
+    line-height:1;padding:4px 8px;
+  }
+  .clear-row{
+    padding:0 20px;
+    flex-shrink:0;
+  }
+  .clear-btn{
+    width:100%;
+    background:rgba(181,83,60,0.1);
+    border:1px solid rgba(181,83,60,0.35);
+    color:var(--clay-deep);
+    padding:9px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    margin:12px 0 0;
+  }
+  .tabs{
+    display:flex;
+    gap:8px;
+    padding:14px 20px 10px;
+    overflow-x:auto;
+    flex-shrink:0;
+    scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    background:var(--parchment-2);
+    border:1px solid var(--line-dark);
+    border-radius:8px 8px 3px 3px;
+    padding:7px 13px;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    white-space:nowrap;
+    cursor:pointer;
+    color:rgba(51,48,42,0.65);
+    flex-shrink:0;
+    transition:background 0.12s, color 0.12s, transform 0.12s;
+  }
+  .tab.active{
+    background:var(--mustard);
+    color:#2B2107;
+    transform:translateY(-2px);
+    box-shadow:0 3px 8px rgba(214,164,25,0.4);
+  }
+  .meal-list{
+    overflow-y:auto;
+    padding:6px 20px 10px;
+    flex:1;
+  }
+  .meal-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 6px;
+    border-bottom:1px solid var(--line-dark);
+    cursor:pointer;
+  }
+  .meal-item:last-child{border-bottom:none;}
+  .meal-item-name{
+    flex:1;
+    font-size:15px;
+    font-weight:500;
+  }
+  .dot-btn{
+    width:22px;height:22px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:transform 0.18s ease;
+  }
+  .dot-btn:active{transform:scale(0.85) rotate(40deg);}
+  .no-meals{
+    text-align:center;
+    color:rgba(51,48,42,0.45);
+    font-size:13px;
+    padding:20px;
+  }
+  .add-area{
+    border-top:1px solid var(--line-dark);
+    padding:12px 20px 18px;
+    flex-shrink:0;
+  }
+  .add-toggle{
+    background:none;
+    border:none;
+    color:var(--mustard-deep);
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+    padding:6px 0;
+  }
+  .add-form{
+    display:none;
+    gap:8px;
+    margin-top:8px;
+    flex-wrap:wrap;
+  }
+  .add-form.open{display:flex;}
+  .add-form input, .add-form select{
+    font-family:'Karla',sans-serif;
+    font-size:13.5px;
+    padding:9px 10px;
+    border-radius:7px;
+    border:1px solid var(--line-dark);
+    background:#fff;
+    color:var(--charcoal);
+  }
+  .add-form input{flex:1 1 160px;}
+  .add-form select{flex:0 1 150px;}
+  .add-form button{
+    background:var(--sage);
+    color:#fff;
+    border:none;
+    border-radius:7px;
+    padding:9px 16px;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .loading{
+    text-align:center;
+    padding:60px 20px;
+    color:rgba(246,239,222,0.6);
+    font-size:14px;
+  }
+  .toast{
+    position:fixed;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink-2);
+    color:var(--parchment);
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:13px;
+    box-shadow:0 6px 16px rgba(0,0,0,0.35);
+    opacity:0;
+    transition:opacity 0.25s, transform 0.25s;
+    pointer-events:none;
+    z-index:99;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  footer{
+    text-align:center;
+    margin-top:34px;
+    font-size:11.5px;
+    color:rgba(246,239,222,0.35);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">The Recipe Box</div>
+    <h1>The Weekly Menu</h1>
+    <p class="sub">Tap a day to choose tonight's meal. Tap the dial next to any meal to mark how easy it is to make. Add a note under any day for things like game nights or birthdays &mdash; the meal stays put.</p>
+    <div class="legend">
+      <span class="legend-item"><span class="swatch green"></span>Easy</span>
+      <span class="legend-item"><span class="swatch yellow"></span>Medium</span>
+      <span class="legend-item"><span class="swatch red"></span>Involved</span>
+    </div>
+  </header>
+
+  <div class="weeknav">
+    <button id="prevWeek" aria-label="Previous week">&#8249;</button>
+    <div class="weekrange" id="weekRange">&nbsp;</div>
+    <button id="nextWeek" aria-label="Next week">&#8250;</button>
+  </div>
+  <div class="refresh-row"><button id="refreshBtn">Refresh &mdash; see everyone's latest picks</button></div>
+
+  <div id="daysContainer"><div class="loading">Loading the menu&hellip;</div></div>
+
+  <footer>Picks are shared with everyone using this planner.</footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalDayTitle">Pick a meal</h2>
+      <button class="close" id="closeModal" aria-label="Close">&times;</button>
+    </div>
+    <div class="clear-row" id="clearRow" style="display:none;">
+      <button class="clear-btn" id="clearBtn">Clear this day</button>
+    </div>
+    <div class="tabs" id="tabsRow"></div>
+    <div class="meal-list" id="mealList"></div>
+    <div class="add-area">
+      <button class="add-toggle" id="addToggle">+ Add a meal to the box</button>
+      <div class="add-form" id="addForm">
+        <input type="text" id="newMealName" placeholder="Meal name">
+        <select id="newMealCategory"></select>
+        <button id="submitNewMeal">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CATEGORIES = ["MEXICAN","PASTAS/ITALIAN","MISC. INTERNATIONAL","CASSEROLE/COMFORT","AMERICAN","SOUP/STEW","BFD","ULTRA CONVENIENCE"];
+
+const DEFAULT_MEALS = [
+  ["Burritos","MEXICAN","yellow"],["Enchiladas","MEXICAN","yellow"],["Quesadillas","MEXICAN","yellow"],["Taco salad","MEXICAN","yellow"],["Tacos","MEXICAN","yellow"],
+  ["Baked pasta casserole","PASTAS/ITALIAN","yellow"],["Chicken alfredo","PASTAS/ITALIAN","red"],["Chicken pesto pasta","PASTAS/ITALIAN","yellow"],["Lasagna","PASTAS/ITALIAN","red"],["Pasta salad with chicken","PASTAS/ITALIAN","yellow"],["Pasta w/ olive oil, garlic, cheese","PASTAS/ITALIAN","yellow"],["Pizza breadsticks","PASTAS/ITALIAN","yellow"],["Spaghetti w/ meat sauce","PASTAS/ITALIAN","yellow"],["Spaghetti w/ meatballs","PASTAS/ITALIAN","yellow"],["Meatball subs","PASTAS/ITALIAN","yellow"],
+  ["Bourbon chicken + rice","MISC. INTERNATIONAL","yellow"],["Cabbage & noodles","MISC. INTERNATIONAL","yellow"],["Cabbage rolls","MISC. INTERNATIONAL","red"],["Chicken curry / butter chicken","MISC. INTERNATIONAL","red"],["Greek bowls","MISC. INTERNATIONAL","yellow"],["Grilled chicken & veg skewers","MISC. INTERNATIONAL","yellow"],["Kokoro bowls","MISC. INTERNATIONAL","yellow"],["Stir-fry / teriyaki","MISC. INTERNATIONAL","yellow"],
+  ["Beef and cabbage casserole","CASSEROLE/COMFORT","yellow"],["Beef stroganoff","CASSEROLE/COMFORT","yellow"],["Chicken & rice casserole","CASSEROLE/COMFORT","yellow"],["Chicken paprikas","CASSEROLE/COMFORT","red"],["Chicken pot pie","CASSEROLE/COMFORT","red"],["Meatloaf & mashed potatoes","CASSEROLE/COMFORT","red"],["Taco casserole","CASSEROLE/COMFORT","yellow"],["Tuna casserole","CASSEROLE/COMFORT","yellow"],["Quinoa + sausage + cranberry","CASSEROLE/COMFORT","yellow"],
+  ["BLT sandwiches","AMERICAN","yellow"],["Burgers","AMERICAN","yellow"],["Porkchops + grain + veg","AMERICAN","yellow"],["Pulled pork sandwiches","AMERICAN","red"],["Salmon","AMERICAN","yellow"],["Turkey breast + cranberry","AMERICAN","yellow"],["Beef roast","AMERICAN","yellow"],["BBQ or marinated chicken","AMERICAN","yellow"],
+  ["Beef stew","SOUP/STEW","red"],["Beef vegetable soup","SOUP/STEW","yellow"],["Butternut squash soup","SOUP/STEW","yellow"],["Chicken noodle soup","SOUP/STEW","yellow"],["Chili","SOUP/STEW","yellow"],["Green chicken chili","SOUP/STEW","yellow"],["Italian wedding soup","SOUP/STEW","red"],["Potato soup","SOUP/STEW","yellow"],
+  ["Breakfast burritos","BFD","yellow"],["Eggs, toast & meat","BFD","yellow"],["Omelettes & fruit","BFD","yellow"],["Pancakes, meat & fruit","BFD","yellow"],["Waffles, meat & fruit","BFD","yellow"],
+  ["Deli meat sandwiches","ULTRA CONVENIENCE","green"],["Frozen pizza","ULTRA CONVENIENCE","green"],["Frozen shells","ULTRA CONVENIENCE","yellow"],["Hot dogs / brats","ULTRA CONVENIENCE","yellow"],["Rotisserie chicken","ULTRA CONVENIENCE","yellow"],["Sloppy joes","ULTRA CONVENIENCE","green"],["Tomato soup & grilled cheese","ULTRA CONVENIENCE","green"],["Tuna salad","ULTRA CONVENIENCE","green"]
+].map((m,i)=>({id:"m"+(i+1), name:m[0], category:m[1], difficulty:m[2]}));
+
+const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+let meals = [];
+let weekPlan = {};
+let weekStart = getWeekStart(new Date());
+let activeDayIndex = null;
+let activeCategory = CATEGORIES[0];
+
+function getWeekStart(d){
+  const dt = new Date(d);
+  dt.setHours(0,0,0,0);
+  dt.setDate(dt.getDate() - dt.getDay());
+  return dt;
+}
+function isoDate(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function addDays(d,n){
+  const dt = new Date(d);
+  dt.setDate(dt.getDate()+n);
+  return dt;
+}
+function weekKey(ws){
+  return "week:"+isoDate(ws);
+}
+function fmtRange(ws){
+  const we = addDays(ws,6);
+  const sameMonth = ws.getMonth()===we.getMonth();
+  const startStr = MONTHS[ws.getMonth()]+" "+ws.getDate();
+  const endStr = (sameMonth? "" : MONTHS[we.getMonth()]+" ")+we.getDate();
+  return startStr+" \u2013 "+endStr+", "+we.getFullYear();
+}
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+const MEALS_KEY = "meals_v2";
+async function loadMeals(){
+  try{
+    const res = await window.storage.get(MEALS_KEY, true);
+    const parsed = JSON.parse(res.value);
+    if(Array.isArray(parsed) && parsed.length) return parsed;
+    throw new Error("empty");
+  }catch(e){
+    try{ await window.storage.set(MEALS_KEY, JSON.stringify(DEFAULT_MEALS), true); }catch(e2){}
+    return DEFAULT_MEALS.slice();
+  }
+}
+async function saveMeals(){
+  try{ await window.storage.set(MEALS_KEY, JSON.stringify(meals), true); }
+  catch(e){ showToast("Couldn't save \u2014 check your connection."); }
+}
+async function loadWeekPlan(ws){
+  try{
+    const res = await window.storage.get(weekKey(ws), true);
+    const parsed = JSON.parse(res.value);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  }catch(e){
+    return {};
+  }
+}
+async function saveWeekPlan(){
+  try{ await window.storage.set(weekKey(weekStart), JSON.stringify(weekPlan), true); }
+  catch(e){ showToast("Couldn't save \u2014 check your connection."); }
+}
+
+function mealById(id){ return meals.find(m=>m.id===id); }
+
+function getDayEntry(dayName){
+  const e = weekPlan[dayName];
+  if(!e) return {meal:null, note:""};
+  if(typeof e === "string") return {meal:e, note:""};
+  return {meal: e.meal || null, note: e.note || ""};
+}
+async function setDayMeal(dayName, mealId){
+  weekPlan[dayName] = {...getDayEntry(dayName), meal: mealId};
+  await saveWeekPlan();
+}
+async function clearDayMeal(dayName){
+  weekPlan[dayName] = {...getDayEntry(dayName), meal: null};
+  await saveWeekPlan();
+}
+async function setDayNote(dayName, note){
+  weekPlan[dayName] = {...getDayEntry(dayName), note: note.trim()};
+  await saveWeekPlan();
+}
+
+let noteEditingIndex = null;
+
+function renderWeekRange(){
+  document.getElementById("weekRange").textContent = fmtRange(weekStart);
+}
+
+function renderDays(){
+  const container = document.getElementById("daysContainer");
+  container.innerHTML = "";
+  const grid = document.createElement("div");
+  grid.className = "days";
+  const today = isoDate(getWeekStart(new Date())) === isoDate(weekStart) ? new Date().getDay() : -1;
+
+  DAY_NAMES.forEach((name, i)=>{
+    const date = addDays(weekStart, i);
+    const entry = getDayEntry(name);
+    const meal = entry.meal ? mealById(entry.meal) : null;
+
+    const card = document.createElement("div");
+    card.className = "day-card" + (i===today ? " today" : "");
+    card.innerHTML = `
+      <div class="day-label">${MONTHS[date.getMonth()]} ${date.getDate()}</div>
+      <div class="day-name">${name}</div>
+      ${meal
+        ? `<div class="meal-row"><span class="dot ${meal.difficulty}"></span><span class="meal-name">${escapeHtml(meal.name)}</span></div>`
+        : `<div class="empty-slot">+ Choose a meal</div>`
+      }
+    `;
+    card.addEventListener("click", ()=>openModal(i));
+
+    const noteRow = document.createElement("div");
+    noteRow.className = "note-row";
+    noteRow.addEventListener("click", (e)=> e.stopPropagation());
+
+    if(noteEditingIndex === i){
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "note-input";
+      input.placeholder = "e.g. football game tonight, Grandma's birthday\u2026";
+      input.value = entry.note;
+      input.maxLength = 80;
+      const commit = async ()=>{
+        await setDayNote(name, input.value);
+        noteEditingIndex = null;
+        renderDays();
+      };
+      input.addEventListener("keydown", (e)=>{
+        if(e.key === "Enter"){ commit(); }
+        if(e.key === "Escape"){ noteEditingIndex = null; renderDays(); }
+      });
+      input.addEventListener("blur", commit);
+      noteRow.appendChild(input);
+    } else if(entry.note){
+      const textEl = document.createElement("div");
+      textEl.className = "note-text";
+      textEl.innerHTML = `<span class="pin">\u{1F4CC}</span>${escapeHtml(entry.note)}`;
+      textEl.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        noteEditingIndex = i;
+        renderDays();
+      });
+      noteRow.appendChild(textEl);
+    } else {
+      const addLink = document.createElement("div");
+      addLink.className = "note-add-link";
+      addLink.textContent = "+ Add a note";
+      addLink.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        noteEditingIndex = i;
+        renderDays();
+      });
+      noteRow.appendChild(addLink);
+    }
+    card.appendChild(noteRow);
+    grid.appendChild(card);
+  });
+  container.appendChild(grid);
+  if(noteEditingIndex !== null){
+    const input = grid.querySelectorAll(".note-input")[0];
+    if(input){ input.focus(); input.select(); }
+  }
+}
+
+function escapeHtml(s){
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderTabs(){
+  const row = document.getElementById("tabsRow");
+  row.innerHTML = "";
+  CATEGORIES.forEach(cat=>{
+    const tab = document.createElement("div");
+    tab.className = "tab" + (cat===activeCategory ? " active" : "");
+    tab.textContent = cat;
+    tab.addEventListener("click", ()=>{ activeCategory = cat; renderTabs(); renderMealList(); });
+    row.appendChild(tab);
+  });
+}
+
+function nextDifficulty(d){
+  return d==="green" ? "yellow" : d==="yellow" ? "red" : "green";
+}
+
+function renderMealList(){
+  const list = document.getElementById("mealList");
+  list.innerHTML = "";
+  const items = meals.filter(m=>m.category===activeCategory);
+  if(!items.length){
+    list.innerHTML = `<div class="no-meals">No meals in this category yet.</div>`;
+    return;
+  }
+  items.forEach(meal=>{
+    const row = document.createElement("div");
+    row.className = "meal-item";
+
+    const dotBtn = document.createElement("button");
+    dotBtn.className = "dot-btn dot " + meal.difficulty;
+    dotBtn.setAttribute("aria-label","Cycle difficulty for "+meal.name);
+    dotBtn.addEventListener("click", async (e)=>{
+      e.stopPropagation();
+      meal.difficulty = nextDifficulty(meal.difficulty);
+      dotBtn.className = "dot-btn dot " + meal.difficulty;
+      await saveMeals();
+      renderDays();
+    });
+
+    const nameSpan = document.createElement("div");
+    nameSpan.className = "meal-item-name";
+    nameSpan.textContent = meal.name;
+
+    row.appendChild(dotBtn);
+    row.appendChild(nameSpan);
+    row.addEventListener("click", async ()=>{
+      if(activeDayIndex===null) return;
+      const dayName = DAY_NAMES[activeDayIndex];
+      await setDayMeal(dayName, meal.id);
+      renderDays();
+      closeModal();
+      showToast(dayName+"\u2019s meal set to "+meal.name);
+    });
+
+    list.appendChild(row);
+  });
+}
+
+function openModal(dayIndex){
+  activeDayIndex = dayIndex;
+  const dayName = DAY_NAMES[dayIndex];
+  document.getElementById("modalDayTitle").textContent = "Pick "+dayName+"'s meal";
+  const hasMeal = !!getDayEntry(dayName).meal;
+  document.getElementById("clearRow").style.display = hasMeal ? "block" : "none";
+  activeCategory = CATEGORIES[0];
+  renderTabs();
+  renderMealList();
+  document.getElementById("addForm").classList.remove("open");
+  document.getElementById("overlay").classList.add("open");
+}
+function closeModal(){
+  document.getElementById("overlay").classList.remove("open");
+  activeDayIndex = null;
+}
+
+async function init(){
+  meals = await loadMeals();
+  weekPlan = await loadWeekPlan(weekStart);
+  renderWeekRange();
+  renderDays();
+
+  const catSelect = document.getElementById("newMealCategory");
+  catSelect.innerHTML = CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join("");
+
+  document.getElementById("prevWeek").addEventListener("click", async ()=>{
+    weekStart = addDays(weekStart, -7);
+    renderWeekRange();
+    document.getElementById("daysContainer").innerHTML = `<div class="loading">Loading&hellip;</div>`;
+    weekPlan = await loadWeekPlan(weekStart);
+    renderDays();
+  });
+  document.getElementById("nextWeek").addEventListener("click", async ()=>{
+    weekStart = addDays(weekStart, 7);
+    renderWeekRange();
+    document.getElementById("daysContainer").innerHTML = `<div class="loading">Loading&hellip;</div>`;
+    weekPlan = await loadWeekPlan(weekStart);
+    renderDays();
+  });
+  document.getElementById("refreshBtn").addEventListener("click", async ()=>{
+    meals = await loadMeals();
+    weekPlan = await loadWeekPlan(weekStart);
+    renderDays();
+    showToast("Refreshed");
+  });
+  document.getElementById("closeModal").addEventListener("click", closeModal);
+  document.getElementById("overlay").addEventListener("click", (e)=>{
+    if(e.target.id==="overlay") closeModal();
+  });
+  document.getElementById("clearBtn").addEventListener("click", async ()=>{
+    const dayName = DAY_NAMES[activeDayIndex];
+    await clearDayMeal(dayName);
+    renderDays();
+    closeModal();
+    showToast(dayName+"\u2019s meal cleared");
+  });
+  document.getElementById("addToggle").addEventListener("click", ()=>{
+    document.getElementById("addForm").classList.toggle("open");
+    document.getElementById("newMealCategory").value = activeCategory;
+  });
+  document.getElementById("submitNewMeal").addEventListener("click", async ()=>{
+    const nameInput = document.getElementById("newMealName");
+    const name = nameInput.value.trim();
+    if(!name) return;
+    const category = document.getElementById("newMealCategory").value;
+    const newMeal = {id:"custom_"+Date.now(), name, category, difficulty:"yellow"};
+    meals.push(newMeal);
+    await saveMeals();
+    nameInput.value = "";
+    activeCategory = category;
+    renderTabs();
+    renderMealList();
+    showToast("Added \u201c"+name+"\u201d to the box");
+  });
+}
+
+init();
+</script>
+</body>
+</html>
